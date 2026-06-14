@@ -19,11 +19,9 @@ class RequestCreate(BaseModel):
     resource_type: str
     justification: str
 
-# 3. 加上 db 依賴注入，讓資料真正寫入資料庫
 @app.post("/api/v1/requests")
 def create_request(payload: RequestCreate, db: Session = Depends(get_db)):
     
-    # 建立資料庫模型物件
     db_request = models.ApprovalRequest(
         employee_id=payload.employee_id,
         resource_type=payload.resource_type,
