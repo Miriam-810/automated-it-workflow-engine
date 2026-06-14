@@ -18,15 +18,20 @@ class RequestCreate(BaseModel):
     employee_id: str
     resource_type: str
     justification: str
+    estimated_cost: float
 
 @app.post("/api/v1/requests")
 def create_request(payload: RequestCreate, db: Session = Depends(get_db)):
     
+    determined_status = "pending"
+    if payload.estimated_cost < 50.0 and len(payload.justification.strip()) >= 10:
+        determined_status = "approved"
+        
     db_request = models.ApprovalRequest(
         employee_id=payload.employee_id,
         resource_type=payload.resource_type,
         justification=payload.justification,
-        status="pending"
+        status=determined_status  # 💡 使用動態判定的狀態
     )
     
     db.add(db_request)
@@ -34,6 +39,6 @@ def create_request(payload: RequestCreate, db: Session = Depends(get_db)):
     db.refresh(db_request)
     
     return {
-        "message": "Request submitted and persisted to database successfully!",
+        "message": f"Request processed with status: {determined_status}",
         "data": db_request
     }
