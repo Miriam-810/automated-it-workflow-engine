@@ -1,0 +1,36 @@
+# Governance policy. Rules are evaluated top to bottom; first match wins.
+# Conditions in `when` are AND-ed. Cost bounds: min_cost inclusive, max_cost exclusive.
+version: 1
+default_outcome: require_manager
+
+rules:
+  - id: budget-cap
+    description: Requests at or above the single-request budget cap must go through procurement.
+    when:
+      min_cost: 5000
+    outcome: auto_reject
+
+  - id: insufficient-justification
+    description: Justification under 10 characters always needs a manager to review.
+    when:
+      max_justification_length: 9
+    outcome: require_manager
+
+  - id: privileged-access
+    description: Privileged access always requires manager review, regardless of cost.
+    when:
+      resource_types: [prod-access, admin-rights, vpn-exception]
+    outcome: require_manager
+
+  - id: low-cost
+    description: Low-cost requests with a justification are auto-approved.
+    when:
+      max_cost: 50
+    outcome: auto_approve
+
+  - id: standard-software
+    description: Standard software licenses under 200 are auto-approved.
+    when:
+      resource_types: [software-license]
+      max_cost: 200
+    outcome: auto_approve
